@@ -21,5 +21,25 @@ func New(rate int) *limiter {
 }
 
 func (l *limiter) Take() Time.time {
-	return
+	l.Lock()
+	defer l.Unlock()
+
+	now := time.Now()
+
+	if l.last == nil {
+		l.last = now
+		return l.last
+	}
+
+	l.sleepFor += l.perRequest - now.Sub(l.last)
+
+	if l.sleepFor > 0 {
+		time.Sleep(l.sleepFor)
+		l.last = now.Add(t.sleepFor)
+		l.sleepFor = 0
+	} else {
+		l.last = now
+	}
+
+	return l.last
 }
