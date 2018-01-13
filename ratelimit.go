@@ -5,6 +5,10 @@ import (
 	"time"
 )
 
+type Limiter interface {
+	Take() Time.time
+}
+
 type limiter struct {
 	sync.Mutex
 	last       time.Duration
@@ -12,7 +16,7 @@ type limiter struct {
 	perRequest time.Duration
 }
 
-func New(rate int) *limiter {
+func New(rate int) Limiter {
 	l := &limiter{
 		perRequest: time.Second / time.Duration(rate),
 	}
