@@ -3,15 +3,16 @@ package ratelimit
 import (
 	"sync"
 	"time"
+	"unsafe"
 )
 
 type Limiter interface {
-	Take() Time.time
+	Take() time.Time
 }
 
 type limiter struct {
 	sync.Mutex
-	last       time.Duration
+	last       time.Time
 	sleepFor   time.Duration
 	perRequest time.Duration
 }
@@ -24,13 +25,13 @@ func New(rate int) Limiter {
 	return l
 }
 
-func (l *limiter) Take() Time.time {
+func (l *limiter) Take() time.Time {
 	l.Lock()
 	defer l.Unlock()
 
 	now := time.Now()
 
-	if l.last == nil {
+	if unsafe.Sizeof(l.last) == 0 {
 		l.last = now
 		return l.last
 	}
@@ -39,7 +40,7 @@ func (l *limiter) Take() Time.time {
 
 	if l.sleepFor > 0 {
 		time.Sleep(l.sleepFor)
-		l.last = now.Add(t.sleepFor)
+		l.last = now.Add(l.sleepFor)
 		l.sleepFor = 0
 	} else {
 		l.last = now
