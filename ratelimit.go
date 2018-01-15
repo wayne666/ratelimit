@@ -25,6 +25,7 @@ func New(rate int) Limiter {
 	return l
 }
 
+// this function is not run
 func (l *limiter) Take() time.Time {
 	l.Lock()
 	defer l.Unlock()
